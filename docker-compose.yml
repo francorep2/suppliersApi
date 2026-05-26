@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: suppliers-db
+    restart: always
+    
+    env_file:
+      - .env
+
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  #backend:
+  #  build: .
+  #  container_name: suppliers-api
+  #
+   # environment:
+    #  JWT_SECRET: ${JWT_SECRET}
+     # SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      #SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      #SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    
+   # ports:
+     # - "8080:8080"
+
+    #depends_on:
+      #- postgres
+
+
+volumes:
+  postgres_data:
