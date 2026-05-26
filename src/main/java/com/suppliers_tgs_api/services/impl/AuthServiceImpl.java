@@ -1,29 +1,30 @@
-package com.suppliers_tgs_api.auth;
+package com.suppliers_tgs_api.services.impl;
 
+import java.time.LocalDateTime;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.suppliers_tgs_api.auth.security.JwtService;
 import com.suppliers_tgs_api.dto.LoginRequest;
 import com.suppliers_tgs_api.dto.LoginResponse;
 import com.suppliers_tgs_api.dto.RegisterRequest;
 import com.suppliers_tgs_api.dto.RegisterResponse;
 import com.suppliers_tgs_api.model.User;
 import com.suppliers_tgs_api.repository.UserRepository;
-
+import com.suppliers_tgs_api.services.AuthService;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import com.suppliers_tgs_api.auth.security.JwtService;
-
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class AuthService {
+public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+    @Override
     public RegisterResponse register(RegisterRequest request) {
 
         User user = User.builder()
@@ -31,6 +32,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .isActive(true)
                 .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now().plusDays(30))
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -41,6 +43,7 @@ public class AuthService {
         );
     }
 
+    @Override
     public LoginResponse login(LoginRequest request) {
 
         User user = userRepository.findByUsername(request.getUsername())
