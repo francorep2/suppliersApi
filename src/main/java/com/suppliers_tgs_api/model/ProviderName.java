@@ -6,5 +6,13 @@ public enum ProviderName {
     GRUPO_NUCLEO,
     AIR,
     NEW_TREE,
-    INVID
+    INVID,
+    GC,
+    POLYTECH,
+    ASHIR,
+    HDC,
+    SOLUTION_BOX,
+    DISTECNA,
+    CEVEN,
+    DIAPSTORE
 }
