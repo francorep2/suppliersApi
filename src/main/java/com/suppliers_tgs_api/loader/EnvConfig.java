@@ -13,5 +13,7 @@ public class EnvConfig {
         System.setProperty("JWT_SECRET", dotenv.get("JWT_SECRET"));
         System.setProperty("JWT_EXPIRATION", dotenv.get("JWT_EXPIRATION"));
         System.setProperty("PORT", dotenv.get("PORT"));
+        System.setProperty("ENCRYPTION_KEY", dotenv.get("ENCRYPTION_KEY"));
+        System.setProperty("ALGORITHM", dotenv.get("ALGORITHM"));
     }
 }
