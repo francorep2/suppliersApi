@@ -1,4 +1,4 @@
-package com.suppliers_tgs_api.response;
+package com.suppliers_tgs_api.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,17 +1,18 @@
 package com.suppliers_tgs_api.services.impl;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.suppliers_tgs_api.auth.security.JwtService;
-import com.suppliers_tgs_api.dto.LoginRequest;
-import com.suppliers_tgs_api.dto.LoginResponse;
-import com.suppliers_tgs_api.dto.RegisterRequest;
-import com.suppliers_tgs_api.dto.RegisterResponse;
+import com.suppliers_tgs_api.dto.request.LoginRequest;
+import com.suppliers_tgs_api.dto.request.RegisterRequest;
+import com.suppliers_tgs_api.dto.response.LoginResponse;
+import com.suppliers_tgs_api.dto.response.RegisterResponse;
+import com.suppliers_tgs_api.model.Role;
 import com.suppliers_tgs_api.model.User;
-import com.suppliers_tgs_api.repository.UserRepository;
+import com.suppliers_tgs_api.repositories.UserRepository;
 import com.suppliers_tgs_api.services.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,16 +31,18 @@ public class AuthServiceImpl implements AuthService {
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .isActive(true)
-                .startDate(LocalDateTime.now())
-                .endDate(LocalDateTime.now().plusDays(30))
+                .active(true)
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(30))
+                .role(Role.ROLE_USER)
                 .build();
 
         User savedUser = userRepository.save(user);
 
         return new RegisterResponse(
                 savedUser.getId(),
-                savedUser.getUsername()
+                savedUser.getUsername(),
+                savedUser.getRole()
         );
     }
 
@@ -58,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        String token = jwtService.generateToken(user.getUsername());
+        String token = jwtService.generateToken(user.getUsername(), user.getRole());
 
         return new LoginResponse(token);
     }

@@ -1,4 +1,4 @@
-package com.suppliers_tgs_api.dto;
+package com.suppliers_tgs_api.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,6 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class LoginResponse {
-    private String token;
+public class RegisterRequest {
+    private String username;
+    private String password;
+    
 }

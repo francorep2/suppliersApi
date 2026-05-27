@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.suppliers_tgs_api.response.ApiResponse;
+import com.suppliers_tgs_api.dto.response.ApiResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
