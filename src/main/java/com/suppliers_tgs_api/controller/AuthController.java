@@ -6,12 +6,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import com.suppliers_tgs_api.auth.AuthService;
+
 import com.suppliers_tgs_api.dto.LoginRequest;
 import com.suppliers_tgs_api.dto.LoginResponse;
 import com.suppliers_tgs_api.dto.RegisterRequest;
 import com.suppliers_tgs_api.dto.RegisterResponse;
 import com.suppliers_tgs_api.response.ApiResponse;
+import com.suppliers_tgs_api.services.AuthService;
 
 @RestController
 @RequestMapping("/auth")
