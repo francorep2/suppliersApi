@@ -5,10 +5,13 @@ import java.util.UUID;
 import com.suppliers_tgs_api.model.ProviderName;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+
+@Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class CredentialRequest {
@@ -22,4 +25,8 @@ public class CredentialRequest {
     private String password;
 
     private String apiKey;
+
+    private Long externalUserId;
+
+    private String externalToken;
 }

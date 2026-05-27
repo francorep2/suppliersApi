@@ -49,5 +49,9 @@ public class UserProviderCredential {
 
     private LocalDateTime updatedAt;
 
+    private Long externalUserId;
+
+    private String externalToken;
+
     
 }

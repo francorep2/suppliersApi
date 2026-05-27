@@ -39,7 +39,39 @@ public class CredentialServiceImpl implements CredentialService {
         credential.setUser(user);
         credential.setProviderName(request.getProviderName());
 
+        ProviderName provider = request.getProviderName();
+
+        switch (provider) {
+
+            case NEW_BYTES -> {
+                if (request.getUsername() == null || request.getPassword() == null) {
+                    throw new RuntimeException("NEW_BYTES requires username and password");
+                }
+            }
+
+            case NEW_TREE -> {
+                if (request.getApiKey() == null) {
+                    throw new RuntimeException("NEW_TREE requires apiKey");
+                }
+            }
+
+            case ELIT -> {
+                if (request.getExternalUserId() == null ||
+                    request.getExternalToken() == null) {
+                    throw new RuntimeException("ELIT requires externalUserId and externalToken");
+                }
+            }
+
+            default -> throw new RuntimeException("Unsupported provider: " + provider);
+        }
+
         credential.setUsername(request.getUsername());
+
+        credential.setExternalUserId(request.getExternalUserId());
+
+        if (request.getExternalToken() != null) {
+            credential.setExternalToken(encryptionService.encrypt(request.getExternalToken()));
+        }
 
         if (request.getApiKey() != null) {
             credential.setApiKey(encryptionService.encrypt(request.getApiKey()));

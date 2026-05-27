@@ -4,5 +4,6 @@ public enum ProviderName {
     NEW_BYTES,
     ELIT,
     GRUPO_NUCLEO,
-    AIR
+    AIR,
+    NEW_TREE
 }
