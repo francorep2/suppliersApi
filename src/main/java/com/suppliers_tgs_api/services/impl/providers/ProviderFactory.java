@@ -6,14 +6,18 @@ import org.springframework.stereotype.Component;
 
 import com.suppliers_tgs_api.model.ProviderName;
 import com.suppliers_tgs_api.services.ProviderService;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class ProviderFactory {
 
     private final List<ProviderService> services;
+
+    public ProviderFactory(List<ProviderService> services) {
+        this.services = services;
+    }
 
     public ProviderService getProvider(ProviderName name) {
         return services.stream()

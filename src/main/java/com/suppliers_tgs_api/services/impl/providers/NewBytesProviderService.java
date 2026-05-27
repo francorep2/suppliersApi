@@ -10,21 +10,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.suppliers_tgs_api.model.ProviderName;
 import com.suppliers_tgs_api.model.UserProviderCredential;
 import com.suppliers_tgs_api.repositories.UserProviderCredentialRepository;
 import com.suppliers_tgs_api.services.EncryptionService;
 import com.suppliers_tgs_api.services.ProviderService;
+import com.suppliers_tgs_api.model.ProviderAuthContext;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class NewBytesProviderService implements ProviderService {
+public class NewBytesProviderService implements ProviderService, CredentialValidator {
 
     private final UserProviderCredentialRepository credentialRepository;
     private final EncryptionService encryptionService;
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     private static final String AUTH_URL =
             "https://api.nb.com.ar/v1/auth/login";
@@ -35,43 +40,63 @@ public class NewBytesProviderService implements ProviderService {
     @Override
     public ProviderName getProviderName() {
         return ProviderName.NEW_BYTES;
-
     }
 
     @Override
-    public String login(UUID userId) {
+    public ProviderAuthContext login(UUID userId) {
 
-        UserProviderCredential cred =
-                credentialRepository.findByUserIdAndProviderName(
-                        userId,
-                        ProviderName.NEW_BYTES
-                ).orElseThrow();
+        try {
 
-        String user = cred.getUsername();
-        String pass = encryptionService.decrypt(cred.getPassword());
+            UserProviderCredential cred =
+                    credentialRepository.findByUserIdAndProviderName(
+                            userId,
+                            ProviderName.NEW_BYTES
+                    ).orElseThrow();
 
-        Map<String, Object> body = Map.of(
-                "user", user,
-                "password", pass,
-                "mode", "api"
-        );
+            JsonNode node =
+                    objectMapper.readTree(cred.getCredentialsJson());
 
-        Map response = restTemplate.postForObject(
-                AUTH_URL,
-                body,
-                Map.class
-        );
+            String username =
+                    node.get("username").asText();
 
-        return (String) response.get("token");
+            String encryptedPassword =
+                    node.get("password").asText();
+
+            String password =
+                    encryptionService.decrypt(encryptedPassword);
+
+            Map<String, Object> body = Map.of(
+                    "user", username,
+                    "password", password,
+                    "mode", "api"
+            );
+
+            Map response =
+                    restTemplate.postForObject(
+                            AUTH_URL,
+                            body,
+                            Map.class
+                    );
+
+            String token = (String) response.get("token");
+
+            return new ProviderAuthContext(token);
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Error authenticating with NEW_BYTES",
+                    e
+            );
+        }
     }
 
     @Override
     public String getElementByName(UUID userId, String name) {
 
-        String token = login(userId);
+        ProviderAuthContext auth = login(userId);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
+        headers.setBearerAuth(auth.getLoginToken());
 
         HttpEntity<Void> request = new HttpEntity<>(headers);
 
@@ -87,4 +112,14 @@ public class NewBytesProviderService implements ProviderService {
 
         return response.getBody();
     }
+
+    @Override
+public void validate(Map<String, Object> credentials) {
+
+    if (!credentials.containsKey("user") ||
+        !credentials.containsKey("password")) {
+
+        throw new RuntimeException("NEW_BYTES needs user + password");
+    }
+}
 }

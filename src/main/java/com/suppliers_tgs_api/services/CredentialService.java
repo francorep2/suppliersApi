@@ -16,4 +16,5 @@ public interface CredentialService {
     CredentialResponse getByUserAndProvider(UUID userId, ProviderName providerName);
 
     void delete(UUID userId, ProviderName providerName);
+
 }

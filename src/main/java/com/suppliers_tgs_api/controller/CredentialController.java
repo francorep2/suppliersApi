@@ -26,7 +26,6 @@ public class CredentialController {
 
     private final CredentialService credentialService;
 
-    // Crear o actualizar credencial de un proveedor para el usuario logueado
     @PostMapping
     public CredentialResponse saveOrUpdate(
             @AuthenticationPrincipal CustomUserDetails user,
@@ -35,7 +34,6 @@ public class CredentialController {
         return credentialService.saveOrUpdate(user.getId(), request);
     }
 
-    // Obtener todas las credenciales del usuario logueado
     @GetMapping("/me")
     public List<CredentialResponse> getMyCredentials(
             @AuthenticationPrincipal CustomUserDetails user
@@ -43,7 +41,6 @@ public class CredentialController {
         return credentialService.getAllByUser(user.getId());
     }
 
-    // Obtener credencial específica por provider
     @GetMapping("/{providerName}")
     public CredentialResponse getByProvider(
             @AuthenticationPrincipal CustomUserDetails user,
@@ -52,7 +49,6 @@ public class CredentialController {
         return credentialService.getByUserAndProvider(user.getId(), providerName);
     }
 
-    // Eliminar credencial de un provider
     @DeleteMapping("/{providerName}")
     public void delete(
             @AuthenticationPrincipal CustomUserDetails user,

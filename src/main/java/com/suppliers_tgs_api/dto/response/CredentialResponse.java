@@ -14,9 +14,6 @@ public class CredentialResponse {
 
     private ProviderName providerName;
 
-    private String username;
+    private String credentialsJson;
 
-    private boolean hasApiKey;
-
-    private boolean hasPassword;
 }

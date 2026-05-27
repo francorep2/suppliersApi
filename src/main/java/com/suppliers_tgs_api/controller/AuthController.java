@@ -22,7 +22,7 @@ public class AuthController {
 
     private final AuthService authService;
 
-        @PreAuthorize("hasRole('ADMIN')")
+        //@PreAuthorize("hasRole('ADMIN')")
         @PostMapping("/register")
     public ApiResponse<RegisterResponse> register(
             @RequestBody RegisterRequest request

@@ -2,10 +2,13 @@ package com.suppliers_tgs_api.services.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suppliers_tgs_api.dto.request.CredentialRequest;
 import com.suppliers_tgs_api.dto.response.CredentialResponse;
 import com.suppliers_tgs_api.model.ProviderName;
@@ -15,8 +18,17 @@ import com.suppliers_tgs_api.repositories.UserProviderCredentialRepository;
 import com.suppliers_tgs_api.repositories.UserRepository;
 import com.suppliers_tgs_api.services.CredentialService;
 import com.suppliers_tgs_api.services.EncryptionService;
+import com.suppliers_tgs_api.services.ProviderService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestTemplate;
+import com.suppliers_tgs_api.model.ProviderAuthContext;
+import com.suppliers_tgs_api.services.impl.providers.AirProviderService;
+import com.suppliers_tgs_api.services.impl.providers.CredentialValidator;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.suppliers_tgs_api.services.impl.providers.ProviderFactory;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +37,9 @@ public class CredentialServiceImpl implements CredentialService {
     private final UserRepository userRepository;
     private final UserProviderCredentialRepository credentialRepository;
     private final EncryptionService encryptionService;
+    private final ObjectMapper objectMapper;
+    private final RestTemplate restTemplate;
+    private final ProviderFactory providerFactory;
 
     @Override
     public CredentialResponse saveOrUpdate(UUID userId, CredentialRequest request) {
@@ -33,7 +48,10 @@ public class CredentialServiceImpl implements CredentialService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserProviderCredential credential =
-                credentialRepository.findByUserIdAndProviderName(userId, request.getProviderName())
+                credentialRepository.findByUserIdAndProviderName(
+                                userId,
+                                request.getProviderName()
+                        )
                         .orElse(new UserProviderCredential());
 
         credential.setUser(user);
@@ -41,44 +59,68 @@ public class CredentialServiceImpl implements CredentialService {
 
         ProviderName provider = request.getProviderName();
 
-        switch (provider) {
+        Map<String, Object> credentials =
+                request.getCredentials();
 
-            case NEW_BYTES -> {
-                if (request.getUsername() == null || request.getPassword() == null) {
-                    throw new RuntimeException("NEW_BYTES requires username and password");
-                }
-            }
+        ProviderService service = providerFactory.getProvider(provider);
+        ((CredentialValidator) service).validate(credentials);
 
-            case NEW_TREE -> {
-                if (request.getApiKey() == null) {
-                    throw new RuntimeException("NEW_TREE requires apiKey");
-                }
-            }
+        if (credentials.containsKey("password")) {
 
-            case ELIT -> {
-                if (request.getExternalUserId() == null ||
-                    request.getExternalToken() == null) {
-                    throw new RuntimeException("ELIT requires externalUserId and externalToken");
-                }
-            }
+            String password =
+                    credentials.get("password").toString();
 
-            default -> throw new RuntimeException("Unsupported provider: " + provider);
+            credentials.put(
+                    "password",
+                    encryptionService.encrypt(password)
+            );
         }
 
-        credential.setUsername(request.getUsername());
+        if (credentials.containsKey("pass")) {
 
-        credential.setExternalUserId(request.getExternalUserId());
+            String pass =
+                    credentials.get("pass").toString();
 
-        if (request.getExternalToken() != null) {
-            credential.setExternalToken(encryptionService.encrypt(request.getExternalToken()));
+            credentials.put(
+                    "pass",
+                    encryptionService.encrypt(pass)
+            );
         }
 
-        if (request.getApiKey() != null) {
-            credential.setApiKey(encryptionService.encrypt(request.getApiKey()));
+        if (credentials.containsKey("token")) {
+
+            String token =
+                    credentials.get("token").toString();
+
+            credentials.put(
+                    "token",
+                    encryptionService.encrypt(token)
+            );
         }
 
-        if (request.getPassword() != null) {
-            credential.setPassword(encryptionService.encrypt(request.getPassword()));
+        if (credentials.containsKey("apiKey")) {
+
+            String apiKey =
+                    credentials.get("apiKey").toString();
+
+            credentials.put(
+                    "apiKey",
+                    encryptionService.encrypt(apiKey)
+            );
+        }
+
+        try {
+
+            String json =
+                    objectMapper.writeValueAsString(credentials);
+
+            credential.setCredentialsJson(json);
+
+        } catch (JsonProcessingException e) {
+
+            throw new RuntimeException(
+                    "Error converting credentials to JSON"
+            );
         }
 
         credential.setUpdatedAt(LocalDateTime.now());
@@ -102,11 +144,18 @@ public class CredentialServiceImpl implements CredentialService {
     }
 
     @Override
-    public CredentialResponse getByUserAndProvider(UUID userId, ProviderName providerName) {
+    public CredentialResponse getByUserAndProvider(
+            UUID userId,
+            ProviderName providerName
+    ) {
 
         UserProviderCredential credential =
-                credentialRepository.findByUserIdAndProviderName(userId, providerName)
-                        .orElseThrow(() -> new RuntimeException("Credential not found"));
+                credentialRepository.findByUserIdAndProviderName(
+                                userId,
+                                providerName
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException("Credential not found"));
 
         return mapToResponse(credential);
     }
@@ -115,22 +164,31 @@ public class CredentialServiceImpl implements CredentialService {
     public void delete(UUID userId, ProviderName providerName) {
 
         UserProviderCredential credential =
-                credentialRepository.findByUserIdAndProviderName(userId, providerName)
-                        .orElseThrow(() -> new RuntimeException("Credential not found"));
+                credentialRepository.findByUserIdAndProviderName(
+                                userId,
+                                providerName
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException("Credential not found"));
 
         credentialRepository.delete(credential);
     }
 
-    private CredentialResponse mapToResponse(UserProviderCredential credential) {
+    private CredentialResponse mapToResponse(
+            UserProviderCredential credential
+    ) {
 
         CredentialResponse response = new CredentialResponse();
 
-        response.setProviderName(credential.getProviderName());
-        response.setUsername(credential.getUsername());
+        response.setProviderName(
+                credential.getProviderName()
+        );
 
-        response.setHasApiKey(credential.getApiKey() != null);
-        response.setHasPassword(credential.getPassword() != null);
+        response.setCredentialsJson(
+                credential.getCredentialsJson()
+        );
 
         return response;
     }
+
 }
