@@ -61,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        String token = jwtService.generateToken(user.getUsername(), user.getRole());
+        String token = jwtService.generateToken(user.getUsername(), user.getRole(), user.getId());
 
         return new LoginResponse(token);
     }

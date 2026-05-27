@@ -2,6 +2,7 @@ package com.suppliers_tgs_api.auth.security;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,6 +32,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -38,28 +44,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = authHeader.substring(7);
+        try {
+            String token = authHeader.substring(7);
 
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(jwtService.getSignKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(jwtService.getSignKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
 
-        String username = claims.getSubject();
-        String role = claims.get("role", String.class);
+            String username = claims.getSubject();
+            String role = claims.get("role", String.class);
+            String id = claims.get("id", String.class);
 
-        List<GrantedAuthority> authorities =
-                List.of(new SimpleGrantedAuthority(role));
+            List<GrantedAuthority> authorities =
+                    List.of(new SimpleGrantedAuthority(role));
 
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(
-                        username,
-                        null,
-                        authorities
-                );
+            CustomUserDetails userDetails = new CustomUserDetails(
+                    UUID.fromString(id),
+                    username,
+                    "",
+                    authorities
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            authorities
+                    );
+
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        } catch (Exception e) {
+            SecurityContextHolder.clearContext();
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         filterChain.doFilter(request, response);
     }

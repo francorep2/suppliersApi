@@ -20,3 +20,7 @@ server:
 
 jwt:
   secret: ${JWT_SECRET}
+
+encryption:
+  key: ${ENCRYPTION_KEY}
+  algorithm: AES
