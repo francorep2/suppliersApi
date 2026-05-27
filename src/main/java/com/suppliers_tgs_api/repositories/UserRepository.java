@@ -1,4 +1,4 @@
-package com.suppliers_tgs_api.repository;
+package com.suppliers_tgs_api.repositories;
 
 import java.util.Optional;
 import java.util.UUID;

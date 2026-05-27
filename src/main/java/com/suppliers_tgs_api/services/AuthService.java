@@ -1,9 +1,9 @@
 package com.suppliers_tgs_api.services;
 
-import com.suppliers_tgs_api.dto.LoginRequest;
-import com.suppliers_tgs_api.dto.LoginResponse;
-import com.suppliers_tgs_api.dto.RegisterRequest;
-import com.suppliers_tgs_api.dto.RegisterResponse;
+import com.suppliers_tgs_api.dto.request.LoginRequest;
+import com.suppliers_tgs_api.dto.request.RegisterRequest;
+import com.suppliers_tgs_api.dto.response.LoginResponse;
+import com.suppliers_tgs_api.dto.response.RegisterResponse;
 
 public interface AuthService {
 
