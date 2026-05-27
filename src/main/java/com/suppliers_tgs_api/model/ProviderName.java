@@ -5,5 +5,6 @@ public enum ProviderName {
     ELIT,
     GRUPO_NUCLEO,
     AIR,
-    NEW_TREE
+    NEW_TREE,
+    INVID
 }
