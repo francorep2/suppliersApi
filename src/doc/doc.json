@@ -1,0 +1,1110 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Search",
+      "description": "Búsqueda de productos en múltiples proveedores"
+    },
+    {
+      "name": "User",
+      "description": "Administración de usuarios (solo ADMIN)"
+    },
+    {
+      "name": "Credentials",
+      "description": "Gestión de credenciales por proveedor"
+    },
+    {
+      "name": "Auth",
+      "description": "Autenticación y registro de usuarios"
+    },
+    {
+      "name": "Invid Sync",
+      "description": "Sincronización y búsqueda de productos Invid"
+    },
+    {
+      "name": "Providers",
+      "description": "Operaciones sobre proveedores externos"
+    }
+  ],
+  "paths": {
+    "/user/update-end-date": {
+      "put": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Actualizar fecha de expiración del usuario",
+        "operationId": "updateEndDateForUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "User end date updated successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseVoid"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - ADMIN only",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/update-active-status": {
+      "put": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Actualizar estado activo del usuario",
+        "operationId": "updateUserActiveStatus",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "User active status updated successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseVoid"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - ADMIN only",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/{name}": {
+      "post": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Búsqueda filtrada por proveedores",
+        "operationId": "search",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Filtered products retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credentials": {
+      "post": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "Crear o actualizar credencial",
+        "operationId": "saveOrUpdate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Credential saved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register user",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "User created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseRegisterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login user",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseLoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseLoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sync/invid/{userId}": {
+      "get": {
+        "tags": [
+          "Invid Sync"
+        ],
+        "summary": "Ejecutar sincronización manual de Invid",
+        "operationId": "sync",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid userId",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Sync completed successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sync/invid/search/{title}": {
+      "get": {
+        "tags": [
+          "Invid Sync"
+        ],
+        "summary": "Buscar productos locales por nombre",
+        "operationId": "search_1",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Products retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/provider/{provider}": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Buscar en un proveedor específico",
+        "operationId": "searchByProvider",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEW_BYTES",
+                "ELIT",
+                "GRUPO_NUCLEO",
+                "AIR",
+                "NEW_TREE",
+                "INVID",
+                "GC",
+                "POLYTECH",
+                "ASHIR",
+                "HDC",
+                "SOLUTION_BOX",
+                "DISTECNA",
+                "CEVEN",
+                "DIAPSTORE"
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid provider",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Products retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/all": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Buscar en todos los proveedores",
+        "operationId": "searchAll",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Products retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/providers/{providerName}/search": {
+      "get": {
+        "tags": [
+          "Providers"
+        ],
+        "summary": "Buscar productos en proveedor externo",
+        "operationId": "search_2",
+        "parameters": [
+          {
+            "name": "providerName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEW_BYTES",
+                "ELIT",
+                "GRUPO_NUCLEO",
+                "AIR",
+                "NEW_TREE",
+                "INVID",
+                "GC",
+                "POLYTECH",
+                "ASHIR",
+                "HDC",
+                "SOLUTION_BOX",
+                "DISTECNA",
+                "CEVEN",
+                "DIAPSTORE"
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Search executed successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credentials/{providerName}": {
+      "get": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "Obtener credencial por proveedor",
+        "operationId": "getByProvider",
+        "parameters": [
+          {
+            "name": "providerName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEW_BYTES",
+                "ELIT",
+                "GRUPO_NUCLEO",
+                "AIR",
+                "NEW_TREE",
+                "INVID",
+                "GC",
+                "POLYTECH",
+                "ASHIR",
+                "HDC",
+                "SOLUTION_BOX",
+                "DISTECNA",
+                "CEVEN",
+                "DIAPSTORE"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Credential found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Credential not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "Eliminar credencial por proveedor",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "providerName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NEW_BYTES",
+                "ELIT",
+                "GRUPO_NUCLEO",
+                "AIR",
+                "NEW_TREE",
+                "INVID",
+                "GC",
+                "POLYTECH",
+                "ASHIR",
+                "HDC",
+                "SOLUTION_BOX",
+                "DISTECNA",
+                "CEVEN",
+                "DIAPSTORE"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Credential deleted successfully"
+          },
+          "404": {
+            "description": "Credential not found"
+          }
+        }
+      }
+    },
+    "/credentials/me": {
+      "get": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "Obtener credenciales del usuario logueado",
+        "operationId": "getMyCredentials",
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Credentials retrieved successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CredentialResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CredentialResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/delete": {
+      "delete": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Eliminar usuario",
+        "operationId": "deleteUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseString"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "User deleted successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseVoid"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - ADMIN only",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApisResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApisResponseString": {
+        "type": "object",
+        "description": "Estructura base de respuesta de la API",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica si la operación fue exitosa",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje descriptivo de la respuesta",
+            "example": "Operation successful"
+          },
+          "data": {
+            "type": "string",
+            "description": "Datos de respuesta (depende del endpoint)"
+          }
+        }
+      },
+      "UserRequest": {
+        "type": "object",
+        "description": "Request para operaciones administrativas sobre usuarios",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID del usuario",
+            "example": "c47e6af2-1234-5678-9abc-def123456789"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Estado activo del usuario",
+            "example": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Fecha de expiración del usuario",
+            "example": "2026-12-31"
+          }
+        }
+      },
+      "ApisResponseVoid": {
+        "type": "object",
+        "description": "Estructura base de respuesta de la API",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica si la operación fue exitosa",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje descriptivo de la respuesta",
+            "example": "Operation successful"
+          },
+          "data": {
+            "description": "Datos de respuesta (depende del endpoint)"
+          }
+        }
+      },
+      "ProductDTO": {
+        "type": "object",
+        "description": "Representación de un producto unificado entre proveedores",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Nombre del proveedor que devuelve el producto",
+            "example": "NEW_BYTES"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nombre del producto",
+            "example": "PROCESADOR AMD (AM4) RYZEN 7 5700G"
+          },
+          "price": {
+            "type": "string",
+            "description": "Precio del producto en USD",
+            "example": 120
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "URL de la imagen del producto",
+            "example": "https://example.com/image.jpg"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "ID externo del producto en el proveedor",
+            "example": "ABC123"
+          }
+        }
+      },
+      "CredentialRequest": {
+        "type": "object",
+        "description": "Request para crear o actualizar credenciales de un proveedor",
+        "properties": {
+          "providerName": {
+            "type": "string",
+            "description": "Nombre del proveedor",
+            "enum": [
+              "NEW_BYTES",
+              "ELIT",
+              "GRUPO_NUCLEO",
+              "AIR",
+              "NEW_TREE",
+              "INVID",
+              "GC",
+              "POLYTECH",
+              "ASHIR",
+              "HDC",
+              "SOLUTION_BOX",
+              "DISTECNA",
+              "CEVEN",
+              "DIAPSTORE"
+            ],
+            "example": "INVID"
+          },
+          "credentials": {
+            "type": "object",
+            "additionalProperties": {
+
+            },
+            "description": "Credenciales dinámicas del proveedor (keys variables según proveedor)",
+            "example": {
+              "apiKey": "123456",
+              "secret": "abcde"
+            }
+          }
+        }
+      },
+      "CredentialResponse": {
+        "type": "object",
+        "description": "Respuesta de credenciales de proveedor",
+        "properties": {
+          "providerName": {
+            "type": "string",
+            "description": "Nombre del proveedor",
+            "enum": [
+              "NEW_BYTES",
+              "ELIT",
+              "GRUPO_NUCLEO",
+              "AIR",
+              "NEW_TREE",
+              "INVID",
+              "GC",
+              "POLYTECH",
+              "ASHIR",
+              "HDC",
+              "SOLUTION_BOX",
+              "DISTECNA",
+              "CEVEN",
+              "DIAPSTORE"
+            ],
+            "example": "INVID"
+          },
+          "credentialsJson": {
+            "type": "string",
+            "description": "Credenciales del proveedor en formato JSON serializado",
+            "example": {
+              "username": "userAdmin",
+              "password": "a2dfg"
+            }
+          }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "description": "Request para registro de usuario",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Nombre de usuario único",
+            "example": "admin"
+          },
+          "password": {
+            "type": "string",
+            "description": "Contraseña del usuario",
+            "example": 123456
+          }
+        }
+      },
+      "ApisResponseRegisterResponse": {
+        "type": "object",
+        "description": "Estructura base de respuesta de la API",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica si la operación fue exitosa",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje descriptivo de la respuesta",
+            "example": "Operation successful"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RegisterResponse",
+            "description": "Datos de respuesta (depende del endpoint)"
+          }
+        }
+      },
+      "RegisterResponse": {
+        "type": "object",
+        "description": "Respuesta de registro de usuario",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID único del usuario",
+            "example": "c47e6af2-1234-5678-9abc-def123456789"
+          },
+          "username": {
+            "type": "string",
+            "description": "Nombre de usuario registrado",
+            "example": "admin"
+          },
+          "role": {
+            "type": "string",
+            "description": "Rol asignado al usuario",
+            "enum": [
+              "ROLE_USER",
+              "ROLE_ADMIN"
+            ],
+            "example": "ROLE_ADMIN"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "description": "Request para autenticación de usuario",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Nombre de usuario o email",
+            "example": "admin"
+          },
+          "password": {
+            "type": "string",
+            "description": "Contraseña del usuario",
+            "example": 123456
+          }
+        }
+      },
+      "ApisResponseLoginResponse": {
+        "type": "object",
+        "description": "Estructura base de respuesta de la API",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica si la operación fue exitosa",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje descriptivo de la respuesta",
+            "example": "Operation successful"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LoginResponse",
+            "description": "Datos de respuesta (depende del endpoint)"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "description": "Respuesta de autenticación con JWT",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token JWT de acceso",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        }
+      }
+    }
+  }
+}
