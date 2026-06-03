@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +26,54 @@ public class InvidSyncServiceImpl {
     private final ObjectMapper objectMapper;
 
    public void sync(UUID userId) {
+
+    String url =
+            "https://www.invidcomputers.com/api/v1/articulo.php";
+
+    while (url != null) {
+
+        JsonNode response =
+                invidProviderService.callEndpoint(
+                        userId,
+                        url
+                );
+
+        JsonNode products =
+                response.path("data");
+
+        List<InvidProduct> batch =
+                new ArrayList<>();
+
+        for (JsonNode node : products) {
+
+                if (!isValidProduct(node)) {
+                        continue;
+                }
+
+                batch.add(mapProduct(node));
+                }
+
+        saveOrUpdate(batch);
+
+        JsonNode next =
+                response.get("next_page_url");
+
+        String nextUrl =
+        next == null || next.isNull()
+                ? null
+                : next.asText();
+
+        url = (nextUrl == null || nextUrl.isBlank())
+        ? null
+        : nextUrl;
+
+    }
+   }
+
+@Scheduled(cron = "0 */30 * * * *")
+ public void scheduleSync(UUID userId) {
+
+        System.out.println("Starting scheduled INVID sync at: " + LocalDateTime.now());
 
     String url =
             "https://www.invidcomputers.com/api/v1/articulo.php";
