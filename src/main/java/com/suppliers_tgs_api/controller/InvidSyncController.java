@@ -29,7 +29,7 @@ public class InvidSyncController {
 
         syncService.sync(userId);
 
-        return "Sync completed";
+        return "Sync completed at" + System.currentTimeMillis();
     }
 
     @GetMapping("/search/{title}")
