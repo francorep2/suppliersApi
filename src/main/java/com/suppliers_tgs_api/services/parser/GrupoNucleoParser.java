@@ -71,7 +71,6 @@ public class GrupoNucleoParser implements ProviderParser {
                     }
                 }
 
-                dto.setRaw(item.toString());
 
                 products.add(dto);
             }

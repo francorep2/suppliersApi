@@ -29,100 +29,45 @@ public class InvidParser implements ProviderParser {
 
             JsonNode root = objectMapper.readTree(rawResponse);
 
-            JsonNode array = root;
+            JsonNode data = root.path("data");
 
-            if (!root.isArray() && root.has("data")) {
-                array = root.get("data");
-            } else if (!root.isArray() && root.has("results")) {
-                array = root.get("results");
-            }
-
-            if (!array.isArray()) {
+            if (!data.isArray()) {
                 return products;
             }
 
-            for (JsonNode item : array) {
+            for (JsonNode item : data) {
 
                 ProductDTO dto = new ProductDTO();
 
                 dto.setProvider("INVID");
 
-                // externalId
-                if (item.has("ID")) {
-                    dto.setExternalId(item.get("ID").asText());
-                } else if (item.has("id")) {
-                    dto.setExternalId(item.get("id").asText());
-                } else if (item.has("code")) {
-                    dto.setExternalId(item.get("code").asText());
-                } else if (item.has("sku")) {
-                    dto.setExternalId(item.get("sku").asText());
-                }
+                dto.setExternalId(
+                        item.path("ID").asText()
+                );
 
-                // NAME SIMPLE (MISMA FILOSOFÍA QUE GRUPO_NUCLEO)
-                if (item.has("TITLE")) {
-                    dto.setName(item.get("TITLE").asText());
-                } else if (item.has("item_desc_0")) {
-                    dto.setName(item.get("item_desc_0").asText());
-                } else if (item.has("item_desc_1")) {
-                    dto.setName(item.get("item_desc_1").asText());
-                } else if (item.has("DESCRIPTION")) {
-                    dto.setName(item.get("DESCRIPTION").asText());
-                }
+                dto.setName(
+                        item.path("TITLE").asText()
+                );
 
-                // PRICE SIMPLE
-                if (item.has("PRICE")) {
-                    dto.setPrice(item.get("PRICE").asText());
-                } else if (item.has("FINAL_PRICE")) {
-                    dto.setPrice(item.get("FINAL_PRICE").asText());
-                } else if (item.has("price")) {
-                    dto.setPrice(item.get("price").asText());
-                }
+                dto.setPrice(
+                        item.path("PRICE").asText("0")
+                );
 
-                // IMAGE SIMPLE
-                if (item.has("IMAGE_URL")) {
-                    dto.setImageUrl(item.get("IMAGE_URL").asText());
-                } else if (item.has("image_url")) {
-                    dto.setImageUrl(item.get("image_url").asText());
-                } else if (item.has("url_imagenes")
-                        && item.get("url_imagenes").isArray()
-                        && item.get("url_imagenes").size() > 0
-                        && item.get("url_imagenes").get(0).has("url")) {
+                dto.setImageUrl(
+                        item.path("IMAGE_URL").asText()
+                );
 
-                    dto.setImageUrl(
-                            item.get("url_imagenes")
-                                    .get(0)
-                                    .get("url")
-                                    .asText()
-                    );
-                }
 
-                dto.setRaw(item.toString());
-
-                // SIEMPRE agregar (igual que GRUPO_NUCLEO)
                 products.add(dto);
             }
 
-            // DEBUG MODE: return ONLY ONE item to inspect final DTO schema
-            if (products.isEmpty()) {
-                System.out.println("[INVID DEBUG] no products parsed");
-                return products;
-            }
-
-            ProductDTO first = products.get(0);
-
-            List<ProductDTO> singleResult = new ArrayList<>();
-            singleResult.add(first);
-
-            try {
-                System.out.println("[INVID DEBUG] SINGLE OUTPUT DTO = " + objectMapper.writeValueAsString(first));
-            } catch (Exception e) {
-                System.out.println("[INVID DEBUG] could not serialize DTO");
-            }
-
-            return singleResult;
+            return products;
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed parsing INVID response", e);
+            throw new RuntimeException(
+                    "Failed parsing INVID response",
+                    e
+            );
         }
     }
 

@@ -49,7 +49,6 @@ public class ElitParser implements ProviderParser {
                 ProductDTO dto = new ProductDTO();
 
                 dto.setProvider("ELIT");
-                dto.setRaw(item.toString());
 
                 // externalId (ELIT schema)
                 if (item.has("id")) {

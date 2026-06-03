@@ -10,7 +10,6 @@ public class ProductDTO {
     private String price;
     private String imageUrl;
     private String externalId;
-    private String raw; // opcional: JSON crudo del proveedor
 } 
     
 

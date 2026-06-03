@@ -44,7 +44,6 @@ public class AirParser implements ProviderParser {
                 ProductDTO dto = new ProductDTO();
 
                 dto.setProvider("AIR");
-                dto.setRaw(item.toString());
 
                 // ID / externalId
                 if (item.has("id")) {

@@ -48,7 +48,6 @@ public class NewBytesParser implements ProviderParser {
                 ProductDTO dto = new ProductDTO();
 
                 dto.setProvider("NEW_BYTES");
-                dto.setRaw(item.toString());
 
                 // externalId
                 if (item.has("id")) {
@@ -69,8 +68,8 @@ public class NewBytesParser implements ProviderParser {
                 }
 
                 // price
-                if (item.has("price")) {
-                    dto.setPrice(item.get("price").asText());
+                if (item.has("results.finalPrice")) {
+                    dto.setPrice(item.get("results.finalPrice").asText());
                 } else if (item.has("amount")) {
                     dto.setPrice(item.get("amount").asText());
                 }

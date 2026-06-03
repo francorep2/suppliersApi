@@ -8,11 +8,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suppliers_tgs_api.dto.ProductDTO;
 import com.suppliers_tgs_api.model.ProviderName;
-import com.suppliers_tgs_api.services.ProviderParser;
+import com.suppliers_tgs_api.services.ProductService;
 import com.suppliers_tgs_api.services.ProviderService;
 import com.suppliers_tgs_api.services.SupplierSearchEngine;
 import com.suppliers_tgs_api.services.impl.providers.ProviderFactory;
@@ -26,6 +25,7 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
 
     private final ProviderFactory providerFactory;
     private final ProviderParserFactory parserFactory;
+    private final ProductService productService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -34,23 +34,17 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
 
         UUID userId = getAuthenticatedUserId();
 
-        System.out.println("[SEARCH_ALL] query = " + query);
-        System.out.println("[SEARCH_ALL] userId = " + userId);
-
         List<ProductDTO> allResults = new ArrayList<>();
 
         for (ProviderName provider : ProviderName.values()) {
 
             try {
-                System.out.println("[SEARCH_ALL] provider = " + provider);
 
                 ProviderService service =
                         providerFactory.getProvider(provider);
 
                 List<ProductDTO> providerResults =
                         searchByProviderInternal(service, userId, query);
-
-                System.out.println("[SEARCH_ALL] provider results size = " + providerResults.size());
 
                 allResults.addAll(providerResults);
 
@@ -67,16 +61,11 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
 
         UUID userId = getAuthenticatedUserId();
 
-        System.out.println("[SEARCH_PROVIDER] provider = " + providerName);
-        System.out.println("[SEARCH_PROVIDER] query = " + query);
-
         ProviderService service =
                 providerFactory.getProvider(providerName);
 
         List<ProductDTO> results =
                 searchByProviderInternal(service, userId, query);
-
-        System.out.println("[SEARCH_PROVIDER] results size = " + results.size());
 
         return filterResults(results, query);
     }
@@ -87,110 +76,53 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
             String query
     ) {
 
-        System.out.println("[INTERNAL] provider = " + service.getProviderName());
-        System.out.println("[INTERNAL] query = " + query);
-
         String safeQuery = (query == null) ? "" : query;
 
-        // =========================
-        // INVID PAGINATION LOGIC
-        // =========================
         if (service.getProviderName() == ProviderName.INVID) {
 
-            List<ProductDTO> all = new java.util.ArrayList<>();
-            String offset = "0";
+            System.out.println("[INVID LOCAL SEARCH] query = " + safeQuery);
 
-            int maxPages = 10;
-            int page = 0;
-
-            while (page < maxPages) {
-
-                String paginatedQuery = safeQuery + "&offset=" + offset;
-
-                String rawResponse = service.getElementByName(userId, paginatedQuery);
-
-                System.out.println("[INVID PAGINATION] page = " + page);
-                System.out.println("[INVID PAGINATION] offset = " + offset);
-
-                ProviderParser parser = parserFactory.getParser(service.getProviderName());
-                all.addAll(parser.parse(rawResponse));
-
-                try {
-                    JsonNode json = objectMapper.readTree(rawResponse);
-                    JsonNode next = json.get("next_page_url");
-
-                    if (next == null || next.asText().isBlank()) {
-                        break;
-                    }
-
-                    String nextUrl = next.asText();
-
-                    if (!nextUrl.contains("offset=")) {
-                        break;
-                    }
-
-                    offset = nextUrl.split("offset=")[1];
-
-                    page++;
-
-                    try {
-                        Thread.sleep(400);
-                    } catch (InterruptedException ignored) {}
-
-                } catch (Exception e) {
-                    break;
-                }
-            }
-
-            System.out.println("[INVID PAGINATION] total parsed = " + all.size());
-            return all;
+            return productService.getProductLocalByName(safeQuery);
         }
 
-        // =========================
-        // DEFAULT BEHAVIOR (ALL OTHER PROVIDERS)
-        // =========================
+        String rawResponse =
+                service.getElementByName(userId, safeQuery);
 
-        String rawResponse = service.getElementByName(userId, safeQuery);
-
-        System.out.println("[INTERNAL] rawResponse = " + rawResponse);
-
-        ProviderParser parser = parserFactory.getParser(service.getProviderName());
+        var parser =
+                parserFactory.getParser(service.getProviderName());
 
         return parser.parse(rawResponse);
     }
 
     private List<ProductDTO> filterResults(List<ProductDTO> list, String query) {
 
-    if (query == null || query.isBlank()) {
-        return list;
+        if (query == null || query.isBlank()) {
+            return list;
+        }
+
+        String q = normalize(query);
+
+        return list.stream()
+                .filter(p -> {
+
+                    String name = normalize(p.getName());
+
+                    if (name.contains(q)) return true;
+
+                    String[] words = name.split(" ");
+                    for (String w : words) {
+                        if (w.contains(q)) return true;
+                    }
+
+                    return false;
+                })
+                .toList();
     }
-
-    String q = normalize(query);
-
-    return list.stream()
-            .filter(p -> {
-
-                String name = normalize(p.getName());
-
-                // ✔ match exact
-                if (name.contains(q)) return true;
-
-                // ✔ match por palabras
-                String[] words = name.split(" ");
-                for (String w : words) {
-                    if (w.contains(q)) return true;
-                }
-
-                return false;
-            })
-            .toList();
-}
 
     private String normalize(String text) {
         if (text == null) return "";
 
-        return text
-                .toLowerCase()
+        return text.toLowerCase()
                 .replace("\n", " ")
                 .replace("\r", " ")
                 .replace("\t", " ")
