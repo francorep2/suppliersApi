@@ -7,15 +7,18 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suppliers_tgs_api.model.InvidProduct;
 import com.suppliers_tgs_api.repositories.InvidProductRepository;
 import com.suppliers_tgs_api.services.impl.providers.InvidProviderService;
-
+import com.suppliers_tgs_api.utils.JwtDecoderUtil;
 import lombok.RequiredArgsConstructor;
+
+import com.suppliers_tgs_api.auth.security.CustomUserDetails;
+import com.suppliers_tgs_api.auth.security.SecurityConfig;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +26,8 @@ public class InvidSyncServiceImpl {
 
     private final InvidProviderService invidProviderService;
     private final InvidProductRepository repository;
-    private final ObjectMapper objectMapper;
+    private final JwtDecoderUtil jwtDecoderUtil;
+    private final SecurityConfig securityConfig;
 
    public void sync(UUID userId) {
 
@@ -71,8 +75,14 @@ public class InvidSyncServiceImpl {
    }
 
 @Scheduled(cron = "0 */30 * * * *")
- public void scheduleSync(UUID userId) {
+ public void scheduleSync() {
 
+        UUID userId = ((CustomUserDetails) SecurityContextHolder
+        .getContext()
+        .getAuthentication()
+        .getPrincipal())
+        .getId();
+        
         System.out.println("Starting scheduled INVID sync at: " + LocalDateTime.now());
 
     String url =
