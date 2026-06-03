@@ -1,6 +1,5 @@
 package com.suppliers_tgs_api.controller;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +11,8 @@ import com.suppliers_tgs_api.dto.response.ApiResponse;
 import com.suppliers_tgs_api.dto.response.LoginResponse;
 import com.suppliers_tgs_api.dto.response.RegisterResponse;
 import com.suppliers_tgs_api.services.AuthService;
+import com.suppliers_tgs_api.services.impl.InvidSyncServiceImpl;
+import com.suppliers_tgs_api.utils.JwtDecoderUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService authService;
+    private final InvidSyncServiceImpl invidsync;
+    private final JwtDecoderUtil decoder;
 
         //@PreAuthorize("hasRole('ADMIN')")
         @PostMapping("/register")
@@ -43,6 +46,8 @@ public class AuthController {
     ) {
 
         LoginResponse response = authService.login(request);
+        invidsync.sync(decoder.getUserId(response.getToken())); 
+        
 
         return new ApiResponse<>(
                 true,
