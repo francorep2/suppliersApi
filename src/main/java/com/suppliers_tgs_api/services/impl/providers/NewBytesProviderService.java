@@ -12,13 +12,12 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.suppliers_tgs_api.model.ProviderAuthContext;
 import com.suppliers_tgs_api.model.ProviderName;
 import com.suppliers_tgs_api.model.UserProviderCredential;
 import com.suppliers_tgs_api.repositories.UserProviderCredentialRepository;
 import com.suppliers_tgs_api.services.EncryptionService;
 import com.suppliers_tgs_api.services.ProviderService;
-import com.suppliers_tgs_api.model.ProviderAuthContext;
 
 import lombok.RequiredArgsConstructor;
 
@@ -57,7 +56,7 @@ public class NewBytesProviderService implements ProviderService, CredentialValid
                     objectMapper.readTree(cred.getCredentialsJson());
 
             String username =
-                    node.get("username").asText();
+                    node.get("user").asText();
 
             String encryptedPassword =
                     node.get("password").asText();
