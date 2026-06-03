@@ -1,10 +1,16 @@
 package com.suppliers_tgs_api.auth.security;
 
+import java.util.UUID;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -44,4 +50,23 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    public static UUID getAuthenticatedUserId() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("No authenticated user");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof com.suppliers_tgs_api.auth.security.CustomUserDetails user) {
+            return user.getId();
+        }
+
+        throw new RuntimeException("Invalid authentication principal");
+    }
+
 }

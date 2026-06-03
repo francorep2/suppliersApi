@@ -12,4 +12,5 @@ import com.suppliers_tgs_api.model.User;
 public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByUsername(String username);
+    UUID findIdByUsername(String username);
 }

@@ -7,7 +7,9 @@ import com.nimbusds.jwt.JWTParser;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
+@Service
 public class JwtDecoderUtil {
 
 

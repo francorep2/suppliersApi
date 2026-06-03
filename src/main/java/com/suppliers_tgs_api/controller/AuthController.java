@@ -46,7 +46,7 @@ public class AuthController {
     ) {
 
         LoginResponse response = authService.login(request);
-        invidsync.sync(decoder.getUserId(response.getToken())); 
+       // Esto sincroniza invid cada login pero hace que demore 1min invidsync.sync(decoder.getUserId(response.getToken())); 
         
 
         return new ApiResponse<>(
@@ -55,4 +55,5 @@ public class AuthController {
                 response
         );
     }
+    
 }

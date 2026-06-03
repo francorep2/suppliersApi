@@ -17,6 +17,8 @@ import com.suppliers_tgs_api.services.SupplierSearchEngine;
 import com.suppliers_tgs_api.services.impl.providers.ProviderFactory;
 import com.suppliers_tgs_api.services.parser.ProviderParserFactory;
 
+import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -144,4 +146,40 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
 
         throw new RuntimeException("Invalid authentication principal");
     }
+
+    public List<ProductDTO> searchFiltered(String query, Map<String, Boolean> providers) {
+
+    UUID userId = getAuthenticatedUserId();
+
+    List<ProductDTO> allResults = new ArrayList<>();
+
+    for (ProviderName provider : ProviderName.values()) {
+
+        if (providers != null && !providers.isEmpty()) {
+
+            Boolean enabled = providers.get(provider.name());
+
+            if (!Boolean.TRUE.equals(enabled)) {
+                continue;
+            }
+        }
+
+        try {
+
+            ProviderService service =
+                    providerFactory.getProvider(provider);
+
+            List<ProductDTO> providerResults =
+                    searchByProviderInternal(service, userId, query);
+
+            allResults.addAll(providerResults);
+
+        } catch (Exception e) {
+            System.out.println("Provider failed: " + provider + " -> " + e.getMessage());
+        }
+    }
+
+    return filterResults(allResults, query);
+}
+
 }
