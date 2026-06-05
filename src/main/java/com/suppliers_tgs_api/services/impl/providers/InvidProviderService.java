@@ -15,15 +15,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suppliers_tgs_api.model.ProviderAuthContext;
 import com.suppliers_tgs_api.model.ProviderName;
 import com.suppliers_tgs_api.model.UserProviderCredential;
+import com.suppliers_tgs_api.repositories.InvidProductRepository;
 import com.suppliers_tgs_api.repositories.UserProviderCredentialRepository;
 import com.suppliers_tgs_api.services.EncryptionService;
 import com.suppliers_tgs_api.services.ProviderService;
-import lombok.RequiredArgsConstructor;
-import com.suppliers_tgs_api.repositories.InvidProductRepository;
-import com.suppliers_tgs_api.dto.ProductDTO;
-import com.suppliers_tgs_api.model.InvidProduct;
 import com.suppliers_tgs_api.services.parser.InvidParser;
-import java.util.List;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -52,10 +50,13 @@ public class InvidProviderService implements ProviderService, CredentialValidato
 
         try {
 
+        System.out.println("LOGIN USER ID: " + userId);
+
             UserProviderCredential cred =
                     repository.findByUserIdAndProviderName(userId, ProviderName.INVID)
                             .orElseThrow();
 
+        System.out.println("CREDENTIAL FOUND FOR USER: " + cred.getUser().getId());
             JsonNode node =
                     objectMapper.readTree(cred.getCredentialsJson());
 

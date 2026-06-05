@@ -1,5 +1,6 @@
 package com.suppliers_tgs_api.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -8,9 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.suppliers_tgs_api.services.impl.InvidSyncServiceImpl;
 import com.suppliers_tgs_api.dto.ProductDTO;
 import com.suppliers_tgs_api.services.ProductService;
+import com.suppliers_tgs_api.services.impl.InvidSyncServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +30,7 @@ public class InvidSyncController {
 
         syncService.sync(userId);
 
-        return "Sync completed at" + System.currentTimeMillis();
+        return "Sync completed at " + LocalDateTime.now();
     }
 
     @GetMapping("/search/{title}")
