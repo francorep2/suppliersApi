@@ -1,6 +1,5 @@
 package com.suppliers_tgs_api.controller;
 
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -23,7 +22,9 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update-end-date")
-    public ApiResponse<Void> updateEndDateForUser(@RequestBody UserRequest request) {
+    public ApiResponse<Void> updateEndDateForUser(
+            @RequestBody UserRequest request) {
+
         userService.updateEndDateForUser(request.getUserId());
 
         return new ApiResponse<>(
@@ -32,27 +33,35 @@ public class UserController {
                 null
         );
     }
-    
+
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update-active-status")
-    public ApiResponse<Void> updateUserActiveStatus(@RequestBody UserRequest request) {
-        userService.updateUserActiveStatus(request.getUserId(), request.getActive());
+    public ApiResponse<Void> updateUserActiveStatus(
+            @RequestBody UserRequest request) {
+
+        userService.updateUserActiveStatus(
+                request.getUserId(),
+                request.getActive()
+        );
 
         return new ApiResponse<>(
                 true,
                 "User active status updated successfully",
                 null
-        );}
+        );
+    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete")
-    public ApiResponse<Void> deleteUser(@RequestBody UserRequest request) {
+    public ApiResponse<Void> deleteUser(
+            @RequestBody UserRequest request) {
+
         userService.deleteUser(request.getUserId());
 
         return new ApiResponse<>(
                 true,
                 "User deleted successfully",
                 null
-        );}
+        );
     }
-
+}

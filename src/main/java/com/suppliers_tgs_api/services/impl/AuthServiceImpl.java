@@ -51,7 +51,9 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
-
+        if (!isActiveUser(user)) {
+            throw new RuntimeException("User subscription has expired");
+        }
         boolean matches = passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword()
@@ -65,4 +67,13 @@ public class AuthServiceImpl implements AuthService {
 
         return new LoginResponse(token);
     }
+
+    private Boolean isActiveUser(User user) {
+        if (user.getEndDate().isBefore(LocalDate.now())) {
+            user.setActive(false);
+            userRepository.save(user);
+        }
+        return user.getActive();
+    }
+        
 }
