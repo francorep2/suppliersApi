@@ -16,33 +16,160 @@ Backend API para gestión de proveedores, autenticación JWT y sincronización d
 
 ## ⚙️ Requisitos
 
-- Java 17  
-- Maven 3.8+  
-- Docker & Docker Compose  
-- Git  
+- Java 17
+- Maven 3.8+
+- Docker & Docker Compose
+- Git
 
 ---
 
-## 🐳 Base de datos (Docker Compose)
+## 🐳 Docker Compose (Base de datos)
 
-Crea un archivo `docker-compose.yml` en la raíz del proyecto:
-
-```yaml
-version: "3.8"
+version: '3.9'
 
 services:
+
   postgres:
-    image: postgres:15
-    container_name: suppliers_db
+    image: postgres:16
+    container_name: suppliers-db
     restart: always
+
+    env_file:
+      - .env
+
     environment:
-      POSTGRES_DB: suppliers_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 353431
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
     ports:
       - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
 volumes:
   postgres_data:
+
+---
+
+## 🐳 Docker Commands
+
+### Levantar base de datos
+docker-compose up -d
+
+### Bajar base de datos
+docker-compose down
+
+### Reset completo (borra datos)
+docker-compose down -v
+
+---
+
+## 🧪 Variables de entorno (.env)
+
+DB_URL=jdbc:postgresql://localhost:5432/suppliers_db
+DB_USER=postgres
+DB_NAME=suppliers_db
+DB_PASSWORD=YOUR_PASSWORD
+
+JWT_SECRET=YOUR_SECRET_KEY
+JWT_EXPIRATION=3600000
+
+PORT=8080
+
+ENCRYPTION_KEY=YOUR_ENCRYPTION_KEY
+ALGORITHM=AES
+
+FRONT_URL=http://localhost:5173
+
+---
+
+## ▶️ Backend (Spring Boot)
+
+mvn spring-boot:run
+
+mvn clean install
+mvn spring-boot:run
+
+---
+
+## 🌐 Base URL
+
+http://localhost:8080
+
+---
+
+## 🔐 Auth
+
+Authorization: Bearer <token>
+
+---
+
+## 📦 Endpoints
+
+POST /auth/login
+GET /all
+POST /sync
+
+---
+
+## 🧱 Arquitectura
+
+src/
+ ├── config/
+ ├── controller/
+ ├── service/
+ ├── repository/
+ ├── model/
+ ├── security/
+ ├── dto/
+ └── util/
+
+---
+
+## 💻 VS Code Extensions
+
+- Extension Pack for Java
+- Spring Boot Extension Pack
+- Lombok Annotations Support
+- Docker
+- GitLens
+- PostgreSQL
+- REST Client
+
+---
+
+## 📦 Dependencias
+
+Spring Boot Web
+Spring Boot Security
+Spring Data JPA
+PostgreSQL Driver
+JWT (jjwt + nimbus)
+Lombok
+dotenv-java
+
+---
+
+## 🧠 Notas
+
+Arquitectura REST stateless con JWT
+AuthenticationPrincipal para usuario logueado
+JPA + PostgreSQL
+Variables de entorno con .env
+
+---
+
+## 🚀 Comandos rápidos
+
+docker-compose up -d
+docker-compose down
+docker-compose down -v
+mvn spring-boot:run
+
+---
+
+## 📌 Autor
+
+Suppliers TGS API
