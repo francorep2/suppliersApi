@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 import com.suppliers_tgs_api.model.User;
 import com.suppliers_tgs_api.repositories.UserRepository;
 import com.suppliers_tgs_api.services.UserService;
@@ -34,8 +34,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
     public void deleteUser(UUID userId) {
         userRepository.deleteById(userId);
     }
-    
+
+ 
 }

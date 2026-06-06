@@ -14,5 +14,6 @@ public class EnvConfig {
         System.setProperty("JWT_SECRET", dotenv.get("JWT_SECRET"));
         System.setProperty("ENCRYPTION_KEY", dotenv.get("ENCRYPTION_KEY"));
         System.setProperty("ALGORITHM", dotenv.get("ALGORITHM"));
+        System.setProperty("FRONT_URL", dotenv.get("FRONT_URL"));
     }
 }

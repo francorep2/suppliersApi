@@ -68,9 +68,17 @@ public class NewBytesParser implements ProviderParser {
                 }
 
                 // price
-                if (item.has("results.finalPrice")) {
-                    dto.setPrice(item.get("results.finalPrice").asText());
+                if (item.has("price")
+                        && item.get("price").isObject()
+                        && item.get("price").has("finalPrice")) {
+
+                    dto.setPrice(
+                            item.get("price")
+                                    .get("finalPrice")
+                                    .asText());
+
                 } else if (item.has("amount")) {
+
                     dto.setPrice(item.get("amount").asText());
                 }
 

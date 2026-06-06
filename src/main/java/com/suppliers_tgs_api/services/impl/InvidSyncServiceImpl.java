@@ -11,14 +11,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.suppliers_tgs_api.auth.security.CustomUserDetails;
+import com.suppliers_tgs_api.auth.security.SecurityConfig;
 import com.suppliers_tgs_api.model.InvidProduct;
+import com.suppliers_tgs_api.model.User;
 import com.suppliers_tgs_api.repositories.InvidProductRepository;
 import com.suppliers_tgs_api.services.impl.providers.InvidProviderService;
 import com.suppliers_tgs_api.utils.JwtDecoderUtil;
-import lombok.RequiredArgsConstructor;
 
-import com.suppliers_tgs_api.auth.security.CustomUserDetails;
-import com.suppliers_tgs_api.auth.security.SecurityConfig;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +32,9 @@ public class InvidSyncServiceImpl {
 
    public void sync(UUID userId) {
 
+    User user = new User();
+    user.setId(userId);
+    
     String url =
             "https://www.invidcomputers.com/api/v1/articulo.php";
 
@@ -54,7 +58,7 @@ public class InvidSyncServiceImpl {
                         continue;
                 }
 
-                batch.add(mapProduct(node));
+                batch.add(mapProduct(node, user));
                 }
 
         saveOrUpdate(batch);
@@ -85,6 +89,9 @@ public class InvidSyncServiceImpl {
         
         System.out.println("Starting scheduled INVID sync at: " + LocalDateTime.now());
 
+    User user = new User();
+    user.setId(userId);
+
     String url =
             "https://www.invidcomputers.com/api/v1/articulo.php";
 
@@ -108,7 +115,7 @@ public class InvidSyncServiceImpl {
                         continue;
                 }
 
-                batch.add(mapProduct(node));
+                batch.add(mapProduct(node, user));
                 }
 
         saveOrUpdate(batch);
@@ -134,17 +141,45 @@ private void saveOrUpdate(List<InvidProduct> batch) {
         return;
     }
 
-    repository.saveAll(batch);
+    List<InvidProduct> productsToSave = new ArrayList<>();
+
+    for (InvidProduct product : batch) {
+
+        var existing = repository.findByUserIdAndInvidProductId(
+                product.getUser().getId(),
+                product.getInvidProductId());
+
+        if (existing.isPresent()) {
+            InvidProduct current = existing.get();
+
+            current.setTitle(product.getTitle());
+            current.setPartNumber(product.getPartNumber());
+            current.setDescription(product.getDescription());
+            current.setPrice(product.getPrice());
+            current.setStockStatus(product.getStockStatus());
+            current.setImageUrl(product.getImageUrl());
+            current.setLastSync(product.getLastSync());
+
+            productsToSave.add(current);
+        } else {
+            productsToSave.add(product);
+        }
+    }
+
+    repository.saveAll(productsToSave);
 }
 
 
-private InvidProduct mapProduct(JsonNode node) {
+private InvidProduct mapProduct(JsonNode node, User user) {
 
     InvidProduct product = new InvidProduct();
 
-    product.setId(
-            node.path("ID").asText()
-    );
+    product.setUser(user);
+
+    product.setInvidProductId(
+        node.path("ID").asText()
+
+);
 
     product.setTitle(
             node.path("TITLE").asText()

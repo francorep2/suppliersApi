@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,16 +20,10 @@ import com.suppliers_tgs_api.repositories.UserRepository;
 import com.suppliers_tgs_api.services.CredentialService;
 import com.suppliers_tgs_api.services.EncryptionService;
 import com.suppliers_tgs_api.services.ProviderService;
+import com.suppliers_tgs_api.services.impl.providers.CredentialValidator;
+import com.suppliers_tgs_api.services.impl.providers.ProviderFactory;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.RestTemplate;
-import com.suppliers_tgs_api.model.ProviderAuthContext;
-import com.suppliers_tgs_api.services.impl.providers.AirProviderService;
-import com.suppliers_tgs_api.services.impl.providers.CredentialValidator;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.suppliers_tgs_api.services.impl.providers.ProviderFactory;
 
 @Service
 @RequiredArgsConstructor
@@ -189,6 +184,11 @@ public class CredentialServiceImpl implements CredentialService {
         );
 
         return response;
+    }
+
+@Override
+    public List<UserProviderCredential> getAllUserProviderCredentials(UUID userId) {
+        return credentialRepository.findByUserId(userId);
     }
 
 }
