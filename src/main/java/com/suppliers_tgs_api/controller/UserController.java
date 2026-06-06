@@ -1,7 +1,10 @@
 package com.suppliers_tgs_api.controller;
 
+import java.util.List;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.suppliers_tgs_api.dto.request.UserRequest;
 import com.suppliers_tgs_api.dto.response.ApiResponse;
+import com.suppliers_tgs_api.model.User;
 import com.suppliers_tgs_api.services.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -62,6 +66,17 @@ public class UserController {
                 true,
                 "User deleted successfully",
                 null
+        );
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/all")
+    public ApiResponse<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return new ApiResponse<>(
+                true,
+                "Users retrieved successfully",
+                users
         );
     }
 }
