@@ -68,20 +68,20 @@ docker-compose down -v
 
 ## 🧪 Variables de entorno (.env)
 
-DB_URL=jdbc:postgresql://localhost:5432/suppliers_db
-DB_USER=postgres
-DB_NAME=suppliers_db
+DB_URL= 
+DB_USER= 
+DB_NAME= 
 DB_PASSWORD=YOUR_PASSWORD
 
-JWT_SECRET=YOUR_SECRET_KEY
+JWT_SECRET=
 JWT_EXPIRATION=3600000
 
 PORT=8080
 
-ENCRYPTION_KEY=YOUR_ENCRYPTION_KEY
+ENCRYPTION_KEY= 
 ALGORITHM=AES
 
-FRONT_URL=http://localhost:5173
+FRONT_URL= 
 
 ---
 
@@ -103,28 +103,6 @@ http://localhost:8080
 ## 🔐 Auth
 
 Authorization: Bearer <token>
-
----
-
-## 📦 Endpoints
-
-POST /auth/login
-GET /all
-POST /sync
-
----
-
-## 🧱 Arquitectura
-
-src/
- ├── config/
- ├── controller/
- ├── service/
- ├── repository/
- ├── model/
- ├── security/
- ├── dto/
- └── util/
 
 ---
 
@@ -172,4 +150,4 @@ mvn spring-boot:run
 
 ## 📌 Autor
 
-Suppliers TGS API
+Franco Repetto
