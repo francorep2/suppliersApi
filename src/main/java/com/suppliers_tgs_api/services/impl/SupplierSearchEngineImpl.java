@@ -82,8 +82,6 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
 
         if (service.getProviderName() == ProviderName.INVID) {
 
-            System.out.println("[INVID LOCAL SEARCH] query = " + safeQuery);
-
             return productService.getProductLocalByName(safeQuery);
         }
 
