@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suppliers_tgs_api.dto.ProductDTO;
 import com.suppliers_tgs_api.model.ProviderName;
 import com.suppliers_tgs_api.services.ProductService;
@@ -27,30 +29,46 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
     private final ProviderFactory providerFactory;
     private final ProviderParserFactory parserFactory;
     private final ProductService productService;
+    private final ExecutorService providerExecutor;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final long TIMEOUT_MS = 1200;
 
     @Override
     public List<ProductDTO> searchAll(String query) {
 
         UUID userId = getAuthenticatedUserId();
 
-        List<ProductDTO> allResults = new ArrayList<>();
+        List<CompletableFuture<List<ProductDTO>>> futures = new ArrayList<>();
 
         for (ProviderName provider : ProviderName.values()) {
 
+            CompletableFuture<List<ProductDTO>> future =
+                    CompletableFuture.supplyAsync(() -> {
+
+                        try {
+                            ProviderService service =
+                                    providerFactory.getProvider(provider);
+
+                            return searchByProviderInternal(service, userId, query);
+
+                        } catch (Exception e) {
+                            System.out.println("Provider failed: " + provider + " -> " + e.getMessage());
+                            return List.<ProductDTO>of();
+                        }
+
+                    }, providerExecutor)
+                    .completeOnTimeout(List.of(), TIMEOUT_MS, TimeUnit.MILLISECONDS);
+
+            futures.add(future);
+        }
+
+        List<ProductDTO> allResults = new ArrayList<>();
+
+        for (CompletableFuture<List<ProductDTO>> future : futures) {
             try {
-
-                ProviderService service =
-                        providerFactory.getProvider(provider);
-
-                List<ProductDTO> providerResults =
-                        searchByProviderInternal(service, userId, query);
-
-                allResults.addAll(providerResults);
-
+                allResults.addAll(future.get());
             } catch (Exception e) {
-                System.out.println("Provider failed: " + provider + " -> " + e.getMessage());
+                System.out.println("Future failed: " + e.getMessage());
             }
         }
 
@@ -71,12 +89,15 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
         return filterResults(results, query);
     }
 
-    private List<ProductDTO> searchByProviderInternal(ProviderService service,UUID userId,String query) {
+    private List<ProductDTO> searchByProviderInternal(
+            ProviderService service,
+            UUID userId,
+            String query
+    ) {
 
         String safeQuery = (query == null) ? "" : query;
 
         if (service.getProviderName() == ProviderName.INVID) {
-
             return productService.getProductLocalByName(safeQuery);
         }
 
@@ -99,13 +120,11 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
 
         return list.stream()
                 .filter(p -> {
-
                     String name = normalize(p.getName());
 
                     if (name.contains(q)) return true;
 
-                    String[] words = name.split(" ");
-                    for (String w : words) {
+                    for (String w : name.split(" ")) {
                         if (w.contains(q)) return true;
                     }
 
@@ -115,6 +134,7 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
     }
 
     private String normalize(String text) {
+
         if (text == null) return "";
 
         return text.toLowerCase()
@@ -142,37 +162,47 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
 
     public List<ProductDTO> searchFiltered(String query, Map<String, Boolean> providers) {
 
-    UUID userId = getAuthenticatedUserId();
+        UUID userId = getAuthenticatedUserId();
 
-    List<ProductDTO> allResults = new ArrayList<>();
+        List<CompletableFuture<List<ProductDTO>>> futures = new ArrayList<>();
 
-    for (ProviderName provider : ProviderName.values()) {
+        for (ProviderName provider : ProviderName.values()) {
 
-        if (providers != null && !providers.isEmpty()) {
+            if (providers != null && !providers.isEmpty()) {
+                Boolean enabled = providers.get(provider.name());
+                if (!Boolean.TRUE.equals(enabled)) continue;
+            }
 
-            Boolean enabled = providers.get(provider.name());
+            CompletableFuture<List<ProductDTO>> future =
+                    CompletableFuture.supplyAsync(() -> {
 
-            if (!Boolean.TRUE.equals(enabled)) {
-                continue;
+                        try {
+                            ProviderService service =
+                                    providerFactory.getProvider(provider);
+
+                            return searchByProviderInternal(service, userId, query);
+
+                        } catch (Exception e) {
+                            System.out.println("Provider failed: " + provider + " -> " + e.getMessage());
+                            return List.<ProductDTO>of();
+                        }
+
+                    }, providerExecutor)
+                    .completeOnTimeout(List.of(), TIMEOUT_MS, TimeUnit.MILLISECONDS);
+
+            futures.add(future);
+        }
+
+        List<ProductDTO> allResults = new ArrayList<>();
+
+        for (CompletableFuture<List<ProductDTO>> future : futures) {
+            try {
+                allResults.addAll(future.get());
+            } catch (Exception e) {
+                System.out.println("Future failed: " + e.getMessage());
             }
         }
 
-        try {
-
-            ProviderService service =
-                    providerFactory.getProvider(provider);
-
-            List<ProductDTO> providerResults =
-                    searchByProviderInternal(service, userId, query);
-
-            allResults.addAll(providerResults);
-
-        } catch (Exception e) {
-            System.out.println("Provider failed: " + provider + " -> " + e.getMessage());
-        }
+        return filterResults(allResults, query);
     }
-
-    return filterResults(allResults, query);
-}
-
 }
