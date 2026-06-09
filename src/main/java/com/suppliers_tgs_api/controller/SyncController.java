@@ -16,14 +16,14 @@ import com.suppliers_tgs_api.services.impl.InvidSyncServiceImpl;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/sync/invid")
+@RequestMapping("/sync")
 @RequiredArgsConstructor
-public class InvidSyncController {
+public class SyncController {
 
     private final InvidSyncServiceImpl syncService;
     private final ProductService service;
 
-    @GetMapping("/{userId}")
+    @GetMapping("invid/{userId}")
     public String sync(
             @PathVariable UUID userId
     ) {

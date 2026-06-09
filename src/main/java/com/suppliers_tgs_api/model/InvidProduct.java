@@ -23,7 +23,6 @@ import lombok.Data;
     indexes = {
         @Index(name = "idx_invid_title", columnList = "title"),
         @Index(name = "idx_invid_part_number", columnList = "partNumber"),
-        @Index(name = "idx_invid_brand", columnList = "brand")
     }
 )
 public class InvidProduct {

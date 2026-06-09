@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suppliers_tgs_api.dto.ProductDTO;
 import com.suppliers_tgs_api.model.ProviderName;
 import com.suppliers_tgs_api.services.ProviderParser;
-
 @Component
 public class AirParser implements ProviderParser {
 
@@ -22,13 +21,28 @@ public class AirParser implements ProviderParser {
         List<ProductDTO> products = new ArrayList<>();
 
         try {
+
             if (rawResponse == null || rawResponse.isBlank()) {
                 return products;
             }
 
-            JsonNode root = objectMapper.readTree(rawResponse);
+            String cleanedResponse = rawResponse
+                    .replaceAll("<br\\s*/?>", "")
+                    .replaceAll("<b>.*?</b>", "")
+                    .replaceAll("<[^>]*>", "")
+                    .trim();
 
-            // AIR can return either an array or an object wrapping results
+            int start = cleanedResponse.indexOf("[");
+            int end = cleanedResponse.lastIndexOf("]");
+
+            if (start == -1 || end == -1 || end <= start) {
+                throw new RuntimeException("AIR: invalid JSON response after cleaning");
+            }
+
+            String json = cleanedResponse.substring(start, end + 1);
+
+            JsonNode root = objectMapper.readTree(json);
+
             JsonNode arrayNode = root;
 
             if (!root.isArray() && root.has("results")) {
@@ -42,42 +56,41 @@ public class AirParser implements ProviderParser {
             for (JsonNode item : arrayNode) {
 
                 ProductDTO dto = new ProductDTO();
-
                 dto.setProvider("AIR");
 
-                // ID / externalId
-                if (item.has("id")) {
-                    dto.setExternalId(item.get("id").asText());
-                } else if (item.has("code")) {
-                    dto.setExternalId(item.get("code").asText());
-                } else if (item.has("sku")) {
-                    dto.setExternalId(item.get("sku").asText());
+                dto.setExternalId(item.path("codigo").asText(null));
+                dto.setName(item.path("descrip").asText(null));
+                dto.setImageUrl("No Air URL Image");
+
+                long price = item.path("precio").asLong(0);
+
+                long tax = item.path("impuesto_iva")
+                        .path("alicuota")
+                        .asLong(0);
+
+                long internalTax = item.path("impuesto_interno")
+                        .path("alicuota")
+                        .asLong(0);
+
+                double finalPrice = price
+                        * (1 + tax / 100.0)
+                        * (1 + internalTax / 100.0);
+
+                dto.setPrice(String.valueOf((long) finalPrice));
+
+                if (item.path("ros").path("disponible").asInt(0) > 0) {
+                    dto.setLocationAir(List.of("Rosario"));
+
+                } else if (item.path("mza").path("disponible").asInt(0) > 0) {
+                    dto.setLocationAir(List.of("Mendoza"));
+
+                } else if (item.path("cba").path("disponible").asInt(0) > 0) {
+                    dto.setLocationAir(List.of("Cordoba"));
+
+                } else if (item.path("caba").path("disponible").asInt(0) > 0) {
+                    dto.setLocationAir(List.of("CABA (Lugano)"));
                 }
 
-                // NAME
-                if (item.has("name")) {
-                    dto.setName(item.get("name").asText());
-                } else if (item.has("title")) {
-                    dto.setName(item.get("title").asText());
-                } else if (item.has("description")) {
-                    dto.setName(item.get("description").asText());
-                }
-
-                // PRICE
-                if (item.has("price")) {
-                    dto.setPrice(item.get("price").asText());
-                } else if (item.has("amount")) {
-                    dto.setPrice(item.get("amount").asText());
-                }
-
-                // IMAGE
-                if (item.has("image_url")) {
-                    dto.setImageUrl(item.get("image_url").asText());
-                } else if (item.has("imageUrl")) {
-                    dto.setImageUrl(item.get("imageUrl").asText());
-                }
-
-                // only add if name exists (important for filtering logic)
                 if (dto.getName() != null && !dto.getName().isBlank()) {
                     products.add(dto);
                 }
@@ -89,6 +102,7 @@ public class AirParser implements ProviderParser {
 
         return products;
     }
+
 
     @Override
     public ProviderName supports() {
