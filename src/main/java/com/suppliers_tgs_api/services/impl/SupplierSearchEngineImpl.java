@@ -2,6 +2,7 @@ package com.suppliers_tgs_api.services.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
@@ -16,8 +17,6 @@ import com.suppliers_tgs_api.services.ProviderService;
 import com.suppliers_tgs_api.services.SupplierSearchEngine;
 import com.suppliers_tgs_api.services.impl.providers.ProviderFactory;
 import com.suppliers_tgs_api.services.parser.ProviderParserFactory;
-
-import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 
@@ -72,17 +71,11 @@ public class SupplierSearchEngineImpl implements SupplierSearchEngine {
         return filterResults(results, query);
     }
 
-    private List<ProductDTO> searchByProviderInternal(
-            ProviderService service,
-            UUID userId,
-            String query
-    ) {
+    private List<ProductDTO> searchByProviderInternal(ProviderService service,UUID userId,String query) {
 
         String safeQuery = (query == null) ? "" : query;
 
         if (service.getProviderName() == ProviderName.INVID) {
-
-            System.out.println("[INVID LOCAL SEARCH] query = " + safeQuery);
 
             return productService.getProductLocalByName(safeQuery);
         }
