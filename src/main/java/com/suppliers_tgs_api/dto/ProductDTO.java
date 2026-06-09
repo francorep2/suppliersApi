@@ -1,5 +1,7 @@
 package com.suppliers_tgs_api.dto;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
@@ -10,6 +12,7 @@ public class ProductDTO {
     private String price;
     private String imageUrl;
     private String externalId;
+    private List<String> locationAir;
 } 
     
 

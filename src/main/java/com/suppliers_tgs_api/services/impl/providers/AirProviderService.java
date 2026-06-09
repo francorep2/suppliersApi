@@ -74,7 +74,7 @@ public class AirProviderService implements ProviderService, CredentialValidator 
             throw new RuntimeException("AIR login failed", e);
         }
     }
-    
+
     @Override
     public String getElementByName(UUID userId, String name) {
 
@@ -82,8 +82,7 @@ public class AirProviderService implements ProviderService, CredentialValidator 
 
         ProviderAuthContext auth = login(userId);
 
-        String token = auth.getSessionToken();
-        System.out.println("AIR token: " + token);
+        String token = auth.getLoginToken();
 
         if (token == null || token.isBlank()) {
             throw new RuntimeException("AIR token is null");
@@ -96,11 +95,9 @@ public class AirProviderService implements ProviderService, CredentialValidator 
 
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Opción 1 (actual)
         headers.setBearerAuth(token);
 
         Map<String, Object> body = new HashMap<>();
-        body.put("texto", name);
         body.put("stock", "D");
 
         HttpEntity<Map<String, Object>> request =
