@@ -32,7 +32,7 @@ public class DolarController {
     @GetMapping("/oficial")
     public ApiResponse<DolarResponse> getDolaroficial() {
 
-        DolarResponse response = dolarService.getDolarBlue();
+        DolarResponse response = dolarService.getDolarOficial();
 
         return new ApiResponse<>(
                 true,
