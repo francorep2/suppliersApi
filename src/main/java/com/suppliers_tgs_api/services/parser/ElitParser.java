@@ -68,14 +68,6 @@ public class ElitParser implements ProviderParser {
                     dto.setName(item.get("title").asText());
                 }
 
-                // price
-                if (item.has("pvp_usd")) {
-                    dto.setPrice(item.get("pvp_usd").asText());
-                } else if (item.has("precio")) {
-                    dto.setPrice(item.get("precio").asText());
-                } else if (item.has("price")) {
-                    dto.setPrice(item.get("price").asText());
-                }
 
                 // imageUrl (ELIT: imagenes array of strings)
                 if (item.has("imagenes") && item.get("imagenes").isArray() && item.get("imagenes").size() > 0) {
@@ -83,8 +75,14 @@ public class ElitParser implements ProviderParser {
                 } else if (item.has("image_url")) {
                     dto.setImageUrl(item.get("image_url").asText());
                 }
+                
+                dto.setCategory(item.get("sub_categoria").asText());
+                dto.setBrand(item.get("marca").asText());
+                dto.setSku(item.get("codigo_alfa").asText());
+                dto.setPrice(item.get("precio").asText());
+                dto.setIva(item.get("iva").asText());
+                dto.setImpInterno(item.get("impuesto_interno").asText());
 
-                // IMPORTANT: NO FILTERING - always add
                 products.add(dto);
             }
 
