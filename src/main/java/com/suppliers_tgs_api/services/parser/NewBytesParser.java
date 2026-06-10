@@ -67,20 +67,6 @@ public class NewBytesParser implements ProviderParser {
                     dto.setName(item.get("description").asText());
                 }
 
-                // price
-                if (item.has("price")
-                        && item.get("price").isObject()
-                        && item.get("price").has("finalPrice")) {
-
-                    dto.setPrice(
-                            item.get("price")
-                                    .get("finalPrice")
-                                    .asText());
-
-                } else if (item.has("amount")) {
-
-                    dto.setPrice(item.get("amount").asText());
-                }
 
                 // image
                 if (item.has("image_url") && !item.get("image_url").isNull()) {
@@ -94,6 +80,13 @@ public class NewBytesParser implements ProviderParser {
                     // fallback image
                     dto.setImageUrl(item.get("mainImageExp").asText());
                 }
+
+                dto.setCategory(item.get("category").asText());
+                dto.setBrand(item.get("brand").asText());
+                dto.setSku(item.get("sku").asText());
+                dto.setPrice(item.get("price").get("value").asText());
+                dto.setIva(item.get("price").get("iva").asText());
+                dto.setImpInterno(item.get("price").get("internalTax").asText());
 
                 // only valid products (strict rule)
                 if (dto.getName() != null && !dto.getName().isBlank()) {
