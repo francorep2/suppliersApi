@@ -59,7 +59,7 @@ public class InvidParser implements ProviderParser {
 
                 dto.setCategory(item.path("CATEGORY").asText());
                 dto.setBrand(item.path("BRAND").asText());
-                dto.setSku(item.path("sku").asText());
+                dto.setSku(item.path("PART_NUMBER").asText());
                 dto.setIva(item.path("IVA_PERCENT").asText());
                 dto.setImpInterno(item.path("INTERNAL_TAX_PERCENT").asText());
 

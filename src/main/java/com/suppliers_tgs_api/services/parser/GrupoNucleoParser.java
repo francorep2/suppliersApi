@@ -71,6 +71,19 @@ public class GrupoNucleoParser implements ProviderParser {
                     }
                 }
 
+                dto.setCategory(item.get("categoria").asText());
+                dto.setBrand(item.get("marca").asText());
+                dto.setSku(item.get("ean").asText());
+
+                List<String> impuestos = new ArrayList<>();
+                             
+                JsonNode impuestosNode = item.get("impuestos");
+                if (impuestosNode != null && impuestosNode.isArray()) {
+                    for (JsonNode impuesto : impuestosNode) {
+                        impuestos.add(impuesto.asText());
+                    }
+                }
+
 
                 products.add(dto);
             }
